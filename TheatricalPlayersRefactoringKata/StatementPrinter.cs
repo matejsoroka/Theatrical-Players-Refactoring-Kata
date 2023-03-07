@@ -8,7 +8,7 @@ namespace TheatricalPlayersRefactoringKata
     {
         private const int AmountTragedy = 40000;
         private const int AmountComedy = 30000;
-        public static string Print(Invoice invoice, Dictionary<string, Play> plays)
+        public string Print(Invoice invoice, Dictionary<string, Play> plays)
         {
             if (invoice == null) throw new ArgumentNullException(nameof(invoice));
             if (plays == null) throw new ArgumentNullException(nameof(plays));
@@ -21,25 +21,8 @@ namespace TheatricalPlayersRefactoringKata
             foreach(var perf in invoice.Performances) 
             {
                 var play = plays[perf.PlayID];
-                var currentAmount = 0;
-                switch (play.Type) 
-                {
-                    case "tragedy":
-                        currentAmount = AmountTragedy;
-                        if (perf.Audience > 30) {
-                            currentAmount += 1000 * (perf.Audience - 30);
-                        }
-                        break;
-                    case "comedy":
-                        currentAmount = AmountComedy;
-                        if (perf.Audience > 20) {
-                            currentAmount += 10000 + 500 * (perf.Audience - 20);
-                        }
-                        currentAmount += 300 * perf.Audience;
-                        break;
-                    default:
-                        throw new Exception("unknown type: " + play.Type);
-                }
+                var currentAmount = CalculateCurrentAmount(play, perf);
+                
                 volumeCredits = AddVolumeCredits(volumeCredits, perf, play);
                 result = AddLineForOrder(result, cultureInfo, play, currentAmount, perf);
                 totalAmount += currentAmount;
@@ -48,6 +31,35 @@ namespace TheatricalPlayersRefactoringKata
             result += string.Format(cultureInfo, "Amount owed is {0:C}\n", Convert.ToDecimal(totalAmount / 100));
             result += $"You earned {volumeCredits} credits\n";
             return result;
+        }
+
+        private static int CalculateCurrentAmount(Play play, Performance perf)
+        {
+            int currentAmount;
+            switch (play.Type)
+            {
+                case "tragedy":
+                    currentAmount = AmountTragedy;
+                    if (perf.Audience > 30)
+                    {
+                        currentAmount += 1000 * (perf.Audience - 30);
+                    }
+
+                    break;
+                case "comedy":
+                    currentAmount = AmountComedy;
+                    if (perf.Audience > 20)
+                    {
+                        currentAmount += 10000 + 500 * (perf.Audience - 20);
+                    }
+
+                    currentAmount += 300 * perf.Audience;
+                    break;
+                default:
+                    throw new Exception("unknown type: " + play.Type);
+            }
+
+            return currentAmount;
         }
 
         private static string AddLineForOrder(string result, CultureInfo cultureInfo, Play play, int currentAmount,
