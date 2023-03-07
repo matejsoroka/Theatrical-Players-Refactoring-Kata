@@ -2,9 +2,9 @@ namespace TheatricalPlayersRefactoringKata
 {
     public class Performance
     {
-        public string PlayID { get; set; }
+        public string PlayID { get; }
 
-        public int Audience { get; set; }
+        public int Audience { get; }
 
         public Performance(string playID, int audience)
         {

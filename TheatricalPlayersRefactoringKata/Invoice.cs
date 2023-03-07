@@ -4,9 +4,9 @@ namespace TheatricalPlayersRefactoringKata
 {
     public class Invoice
     {
-        public string Customer { get; set; }
+        public string Customer { get; }
 
-        public List<Performance> Performances { get; set; }
+        public List<Performance> Performances { get; }
 
         public Invoice(string customer, List<Performance> performance)
         {
