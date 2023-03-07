@@ -25,17 +25,10 @@ namespace TheatricalPlayersRefactoringKata
                 switch (play.Type) 
                 {
                     case "tragedy":
-                        currentAmount = AmountTragedy;
-                        if (perf.Audience > 30) {
-                            currentAmount += 1000 * (perf.Audience - 30);
-                        }
+                        currentAmount = ComputeAmountForTragedy(perf);
                         break;
                     case "comedy":
-                        currentAmount = AmountComedy;
-                        if (perf.Audience > 20) {
-                            currentAmount += 10000 + 500 * (perf.Audience - 20);
-                        }
-                        currentAmount += 300 * perf.Audience;
+                        currentAmount = ComputeCurrentAmountForComedy(perf);
                         break;
                     default:
                         throw new Exception("unknown type: " + play.Type);
@@ -48,6 +41,29 @@ namespace TheatricalPlayersRefactoringKata
             result += string.Format(cultureInfo, "Amount owed is {0:C}\n", Convert.ToDecimal(totalAmount / 100));
             result += $"You earned {volumeCredits} credits\n";
             return result;
+        }
+
+        private static int ComputeCurrentAmountForComedy(Performance perf)
+        {
+            var currentAmount = AmountComedy;
+            if (perf.Audience > 20)
+            {
+                currentAmount += 10000 + 500 * (perf.Audience - 20);
+            }
+
+            currentAmount += 300 * perf.Audience;
+            return currentAmount;
+        }
+
+        private static int ComputeAmountForTragedy(Performance perf)
+        {
+            var currentAmount = AmountTragedy;
+            if (perf.Audience > 30)
+            {
+                currentAmount += 1000 * (perf.Audience - 30);
+            }
+
+            return currentAmount;
         }
 
         private static string AddLineForOrder(string result, CultureInfo cultureInfo, Play play, int currentAmount,
