@@ -6,24 +6,29 @@ namespace TheatricalPlayersRefactoringKata
 {
     public class StatementPrinter
     {
-        private const int AmountTragedy = 40000;
-        private const int AmountComedy = 30000;
+        private const int TragedyBasePrice = 40000;
+        private const int ComedyBasePrice = 30000;
+        private const int TragedyExtraPricePerAudienceMember = 1000;
+        private const int ComedyExtraPricePerAudienceMember = 500;
+        private const int ComedyAudienceThreshold = 20;
+        private const int TragedyAudienceThreshold = 30;
+
         public string Print(Invoice invoice, Dictionary<string, Play> plays)
         {
             if (invoice == null) throw new ArgumentNullException(nameof(invoice));
             if (plays == null) throw new ArgumentNullException(nameof(plays));
-            
+
             var totalAmount = 0;
             var volumeCredits = 0;
             var result = $"Statement for {invoice.Customer}\n";
             var cultureInfo = new CultureInfo("en-US");
 
-            foreach(var perf in invoice.Performances) 
+            foreach (var perf in invoice.Performances)
             {
                 var play = plays[perf.PlayID];
                 var currentAmount = CalculateCurrentAmount(play, perf);
-                
-                volumeCredits = AddVolumeCredits(volumeCredits, perf, play);
+
+                volumeCredits += CalculateVolumeCredits(play.Type, perf.Audience);
                 result = AddLineForOrder(result, cultureInfo, play, currentAmount, perf);
                 totalAmount += currentAmount;
             }
@@ -39,24 +44,13 @@ namespace TheatricalPlayersRefactoringKata
             switch (play.Type)
             {
                 case "tragedy":
-                    currentAmount = AmountTragedy;
-                    if (perf.Audience > 30)
-                    {
-                        currentAmount += 1000 * (perf.Audience - 30);
-                    }
-
+                    currentAmount = CalculateAmountForTragedy(perf.Audience);
                     break;
                 case "comedy":
-                    currentAmount = AmountComedy;
-                    if (perf.Audience > 20)
-                    {
-                        currentAmount += 10000 + 500 * (perf.Audience - 20);
-                    }
-
-                    currentAmount += 300 * perf.Audience;
+                    currentAmount = CalculateAmountForComedy(perf.Audience);
                     break;
                 default:
-                    throw new Exception("unknown type: " + play.Type);
+                    throw new Exception($"Unknown type: {play.Type}");
             }
 
             return currentAmount;
@@ -70,12 +64,36 @@ namespace TheatricalPlayersRefactoringKata
             return result;
         }
 
-        private static int AddVolumeCredits(int volumeCredits, Performance perf, Play play)
+        private static int CalculateVolumeCredits(string playType, int audience)
         {
-            volumeCredits += Math.Max(perf.Audience - 30, 0);
-            // add extra credit for every ten comedy attendees
-            if ("comedy" == play.Type) volumeCredits += (int)Math.Floor((decimal)perf.Audience / 5);
+            int volumeCredits = Math.Max(audience - 30, 0);
+            if (playType == "comedy")
+            {
+                volumeCredits += (int)Math.Floor((decimal)audience / 5);
+            }
+
             return volumeCredits;
+        }
+
+        private static int CalculateAmountForTragedy(int audience)
+        {
+            int currentAmount = TragedyBasePrice;
+            if (audience > TragedyAudienceThreshold)
+            {
+                currentAmount += TragedyExtraPricePerAudienceMember * (audience - TragedyAudienceThreshold);
+            }
+            return currentAmount;
+        }
+
+        private static int CalculateAmountForComedy(int audience)
+        {
+            int currentAmount = ComedyBasePrice;
+            if (audience > ComedyAudienceThreshold)
+            {
+                currentAmount += 10000 + ComedyExtraPricePerAudienceMember * (audience - ComedyAudienceThreshold);
+            }
+
+            return currentAmount += 300 * audience;
         }
     }
 }
